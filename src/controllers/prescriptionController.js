@@ -41,11 +41,17 @@ const getPrescriptions = async (req, res) => {
         let query = {};
 
         if (req.user.role === 'Patient') {
-            // Placeholder: would normally check mapped patient ID
-            return res.status(403).json({ message: 'Patient direct access requires user-to-patient mapping' });
+            // Find patient record linked to this user
+            const patient = await Patient.findOne({ userId: req.user._id });
+            if (!patient) {
+                // No patient record yet - return empty array
+                return res.json([]);
+            }
+            query.patientId = patient._id;
         } else if (req.user.role === 'Doctor') {
             query.doctorId = req.user._id;
         }
+        // Admin and Receptionist get all prescriptions
 
         const prescriptions = await Prescription.find(query)
             .populate('patientId', 'name')

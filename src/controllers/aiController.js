@@ -36,10 +36,9 @@ const diagnoseSymptoms = async (req, res) => {
 
         res.status(201).json({
             log,
-            conditions: aiResponse.data?.conditions || [],
-            recommendations: aiResponse.data?.recommendations || [],
+            analysis: aiResponse.data,
             riskLevel: aiResponse.riskLevel,
-            message: aiResponse.data?.message || 'Analysis complete',
+            message: aiResponse.success ? 'Analysis complete' : 'AI service unavailable',
             aiStatus: aiResponse.success ? 'Success' : 'Fallback (AI Unavailable)'
         });
     } catch (error) {
@@ -54,6 +53,10 @@ const diagnoseSymptoms = async (req, res) => {
 const getHealthAdvice = async (req, res) => {
     try {
         const { question, symptoms, topic } = req.body;
+        console.log('=== Health Advice Request ===');
+        console.log('Question:', question);
+        console.log('Symptoms:', symptoms);
+        console.log('Topic:', topic);
         
         let prompt = question || '';
         if (symptoms) {
@@ -67,12 +70,17 @@ const getHealthAdvice = async (req, res) => {
             return res.status(400).json({ message: 'Please provide a question, symptoms, or topic' });
         }
 
+        console.log('Final Prompt:', prompt);
+
         // Use the AI helper
         const aiResponse = await getDiagnosticSuggestions([prompt]);
+        console.log('=== AI Response ===');
+        console.log('Success:', aiResponse.success);
+        console.log('Risk Level:', aiResponse.riskLevel);
+        console.log('Data:', aiResponse.data);
         
         res.json({
-            advice: aiResponse.data?.recommendations || aiResponse.data?.message || 'Please consult a healthcare professional for personalized advice.',
-            conditions: aiResponse.data?.conditions || [],
+            advice: aiResponse.success ? aiResponse.data : 'Please consult a healthcare professional for personalized advice.',
             riskLevel: aiResponse.riskLevel || 'low',
             disclaimer: 'This is AI-generated advice. Please consult a doctor for professional medical guidance.',
             aiStatus: aiResponse.success ? 'AI Response' : 'Fallback Response'
@@ -89,18 +97,25 @@ const getHealthAdvice = async (req, res) => {
 const analyzeReport = async (req, res) => {
     try {
         const { reportText, reportType } = req.body;
+        console.log('=== Analyze Report Request ===');
+        console.log('Report Type:', reportType);
+        console.log('Report Text Length:', reportText?.length);
         
         if (!reportText) {
             return res.status(400).json({ message: 'Report text is required' });
         }
 
         const prompt = `Analyze this ${reportType || 'medical'} report and provide insights:\n${reportText.substring(0, 2000)}`;
+        console.log('Prompt:', prompt.substring(0, 200) + '...');
         
         const aiResponse = await getDiagnosticSuggestions([prompt]);
+        console.log('=== AI Response ===');
+        console.log('Success:', aiResponse.success);
+        console.log('Risk Level:', aiResponse.riskLevel);
+        console.log('Data:', aiResponse.data?.substring(0, 500));
         
         res.json({
-            analysis: aiResponse.data?.recommendations || aiResponse.data?.message || 'Unable to analyze report at this time.',
-            findings: aiResponse.data?.conditions || [],
+            analysis: aiResponse.success ? aiResponse.data : 'Unable to analyze report at this time.',
             riskLevel: aiResponse.riskLevel || 'unknown',
             aiStatus: aiResponse.success ? 'AI Analysis' : 'Fallback Response'
         });

@@ -65,7 +65,20 @@ const loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        if (user && (await user.matchPassword(password))) {
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        // Check if user is blocked or deleted
+        if (user.status === 'blocked' || user.status === 'deleted') {
+            return res.status(403).json({ message: 'Your account has been blocked or deleted' });
+        }
+
+        if (user.status === 'suspended') {
+            return res.status(403).json({ message: 'Your account has been suspended' });
+        }
+
+        if (await user.matchPassword(password)) {
             res.json({
                 _id: user._id,
                 name: user.name,
