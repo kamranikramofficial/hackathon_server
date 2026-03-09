@@ -116,8 +116,23 @@ const getUserProfile = async (req, res) => {
     }
 };
 
+// @desc    Get active doctors list
+// @route   GET /api/auth/doctors
+// @access  Private
+const getDoctors = async (req, res) => {
+    try {
+        const doctors = await User.find({ role: 'Doctor', status: 'active' })
+            .select('name email specialization')
+            .sort({ name: 1 });
+        res.json(doctors);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
-    getUserProfile
+    getUserProfile,
+    getDoctors
 };
