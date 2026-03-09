@@ -107,6 +107,9 @@ const getUserProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                phone: user.phone,
+                address: user.address,
+                specialization: user.specialization,
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -130,9 +133,65 @@ const getDoctors = async (req, res) => {
     }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const { name, email, phone, address, specialization, currentPassword, newPassword } = req.body;
+
+        // If changing password, verify current password first
+        if (newPassword) {
+            if (!currentPassword) {
+                return res.status(400).json({ message: 'Current password is required to set a new password' });
+            }
+            const isMatch = await user.matchPassword(currentPassword);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Current password is incorrect' });
+            }
+            user.passwordHash = newPassword; // pre-save hook will hash it
+        }
+
+        // If changing email, check it's not taken
+        if (email && email !== user.email) {
+            const emailExists = await User.findOne({ email });
+            if (emailExists) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+            user.email = email;
+        }
+
+        if (name) user.name = name;
+        if (phone !== undefined) user.phone = phone;
+        if (address !== undefined) user.address = address;
+        if (specialization !== undefined && user.role === 'Doctor') user.specialization = specialization;
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            phone: updatedUser.phone,
+            address: updatedUser.address,
+            specialization: updatedUser.specialization,
+            token: generateToken(updatedUser._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     getUserProfile,
-    getDoctors
+    getDoctors,
+    updateProfile
 };
