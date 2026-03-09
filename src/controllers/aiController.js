@@ -58,11 +58,12 @@ const getHealthAdvice = async (req, res) => {
         console.log('Symptoms:', symptoms);
         console.log('Topic:', topic);
         
-        let prompt = question || '';
-        if (symptoms) {
+        let prompt = '';
+        if (question) {
+            prompt = question;
+        } else if (symptoms) {
             prompt = `I am experiencing: ${symptoms}. What should I do?`;
-        }
-        if (topic) {
+        } else if (topic) {
             prompt = `Give me health advice about: ${topic}`;
         }
         
