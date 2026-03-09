@@ -216,7 +216,10 @@ const forgotPassword = async (req, res) => {
         res.json({ message: 'OTP sent to your email' });
     } catch (error) {
         console.error('Forgot password error:', error);
-        res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
+        const msg = error.message?.includes('not configured')
+            ? 'Email service not configured on server'
+            : 'Failed to send OTP. Please try again.';
+        res.status(500).json({ message: msg });
     }
 };
 

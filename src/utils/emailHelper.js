@@ -1,14 +1,30 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+let transporter = null;
+
+const getTransporter = () => {
+    if (!transporter) {
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.error('EMAIL_USER or EMAIL_PASS not set in environment variables');
+            return null;
+        }
+        transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+    }
+    return transporter;
+};
 
 const sendOtpEmail = async (to, otp) => {
+    const transport = getTransporter();
+    if (!transport) {
+        throw new Error('Email service not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
+    }
+
     const mailOptions = {
         from: `"AI Clinic Pro" <${process.env.EMAIL_USER}>`,
         to,
@@ -34,7 +50,7 @@ const sendOtpEmail = async (to, otp) => {
         `,
     };
 
-    await transporter.sendMail(mailOptions);
+    await transport.sendMail(mailOptions);
 };
 
 module.exports = { sendOtpEmail };
