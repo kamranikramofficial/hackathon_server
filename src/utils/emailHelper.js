@@ -2,17 +2,27 @@ const nodemailer = require('nodemailer');
 
 let transporter = null;
 
+const getMailConfig = () => {
+    const emailUser = (process.env.EMAIL_USER || '').trim();
+    // Gmail app passwords are often copied with spaces; normalize to raw token.
+    const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+    return { emailUser, emailPass };
+};
+
 const getTransporter = () => {
     if (!transporter) {
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        const { emailUser, emailPass } = getMailConfig();
+        if (!emailUser || !emailPass) {
             console.error('EMAIL_USER or EMAIL_PASS not set in environment variables');
             return null;
         }
         transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
+                user: emailUser,
+                pass: emailPass,
             },
         });
     }
@@ -21,12 +31,13 @@ const getTransporter = () => {
 
 const sendOtpEmail = async (to, otp) => {
     const transport = getTransporter();
+    const { emailUser } = getMailConfig();
     if (!transport) {
         throw new Error('Email service not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
     }
 
     const mailOptions = {
-        from: `"AI Clinic Pro" <${process.env.EMAIL_USER}>`,
+        from: `"AI Clinic Pro" <${emailUser}>`,
         to,
         subject: 'Password Reset OTP - AI Clinic Pro',
         html: `

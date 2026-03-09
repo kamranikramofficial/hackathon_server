@@ -216,9 +216,14 @@ const forgotPassword = async (req, res) => {
         res.json({ message: 'OTP sent to your email' });
     } catch (error) {
         console.error('Forgot password error:', error);
-        const msg = error.message?.includes('not configured')
-            ? 'Email service not configured on server'
-            : 'Failed to send OTP. Please try again.';
+        let msg = 'Failed to send OTP. Please try again.';
+        if (error.message?.includes('not configured')) {
+            msg = 'Email service not configured on server';
+        } else if (error.code === 'EAUTH') {
+            msg = 'Email authentication failed. Check EMAIL_USER/EMAIL_PASS.';
+        } else if (error.code === 'ESOCKET' || error.code === 'ETIMEDOUT') {
+            msg = 'Email server connection failed. Please try again shortly.';
+        }
         res.status(500).json({ message: msg });
     }
 };
