@@ -28,7 +28,9 @@ const userSchema = new mongoose.Schema({
     statusUpdatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deletedAt: { type: Date },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    lastLogin: { type: Date }
+    lastLogin: { type: Date },
+    resetOtp: { type: String },
+    resetOtpExpires: { type: Date }
 }, { timestamps: true });
 
 // Pre-save middleware to hash passwords

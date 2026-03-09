@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Patient = require('../models/Patient');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { sendOtpEmail } = require('../utils/emailHelper');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -188,10 +190,78 @@ const updateProfile = async (req, res) => {
     }
 };
 
+// @desc    Send OTP for password reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'No account found with this email' });
+        }
+
+        // Generate 6-digit OTP
+        const otp = crypto.randomInt(100000, 999999).toString();
+        user.resetOtp = otp;
+        user.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        await user.save();
+
+        await sendOtpEmail(email, otp);
+
+        res.json({ message: 'OTP sent to your email' });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
+    }
+};
+
+// @desc    Verify OTP and reset password
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: 'Email, OTP, and new password are required' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        const user = await User.findOne({
+            email,
+            resetOtp: otp,
+            resetOtpExpires: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        user.passwordHash = newPassword; // pre-save hook will hash it
+        user.resetOtp = undefined;
+        user.resetOtpExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Password reset successfully. You can now login.' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Failed to reset password' });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     getUserProfile,
     getDoctors,
-    updateProfile
+    updateProfile,
+    forgotPassword,
+    resetPassword
 };
