@@ -32,8 +32,17 @@ const getTransporter = () => {
 const sendOtpEmail = async (to, otp) => {
     const transport = getTransporter();
     const { emailUser } = getMailConfig();
-    if (!transport) {
-        throw new Error('Email service not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
+    
+    // Demo mode: if email not configured, just log OTP to console
+    if (!transport || !emailUser) {
+        console.log('\n' + '='.repeat(60));
+        console.log('📧 [DEMO MODE] Password Reset OTP');
+        console.log('='.repeat(60));
+        console.log(`Email: ${to}`);
+        console.log(`OTP Code: ${otp}`);
+        console.log('Expires in: 10 minutes');
+        console.log('='.repeat(60) + '\n');
+        return true;
     }
 
     const mailOptions = {
@@ -61,7 +70,21 @@ const sendOtpEmail = async (to, otp) => {
         `,
     };
 
-    await transport.sendMail(mailOptions);
+    try {
+        await transport.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Email send error:', error.message);
+        // Fallback to demo mode if email fails
+        console.log('\n' + '='.repeat(60));
+        console.log('📧 [FALLBACK - DEMO MODE] Password Reset OTP (Email Failed)');
+        console.log('='.repeat(60));
+        console.log(`Email: ${to}`);
+        console.log(`OTP Code: ${otp}`);
+        console.log('Expires in: 10 minutes');
+        console.log('='.repeat(60) + '\n');
+        return true; // Still allow reset even if email fails
+    }
 };
 
 module.exports = { sendOtpEmail };

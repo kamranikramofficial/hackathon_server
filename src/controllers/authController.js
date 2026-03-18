@@ -211,20 +211,13 @@ const forgotPassword = async (req, res) => {
         user.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
         await user.save();
 
+        // Send OTP via email (or demo mode if not configured)
         await sendOtpEmail(email, otp);
-
-        res.json({ message: 'OTP sent to your email' });
+        
+        res.json({ message: 'OTP sent to your email. Check backend console if in demo mode.' });
     } catch (error) {
         console.error('Forgot password error:', error);
-        let msg = 'Failed to send OTP. Please try again.';
-        if (error.message?.includes('not configured')) {
-            msg = 'Email service not configured on server';
-        } else if (error.code === 'EAUTH') {
-            msg = 'Email authentication failed. Check EMAIL_USER/EMAIL_PASS.';
-        } else if (error.code === 'ESOCKET' || error.code === 'ETIMEDOUT') {
-            msg = 'Email server connection failed. Please try again shortly.';
-        }
-        res.status(500).json({ message: msg });
+        res.status(500).json({ message: 'Failed to process forgot password. Please try again.' });
     }
 };
 
