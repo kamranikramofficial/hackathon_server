@@ -71,19 +71,14 @@ const sendOtpEmail = async (to, otp) => {
     };
 
     try {
-        await transport.sendMail(mailOptions);
+        const info = await transport.sendMail(mailOptions);
+        if (!info.accepted || !info.accepted.length) {
+            throw new Error('SMTP did not accept recipient address');
+        }
         return true;
     } catch (error) {
         console.error('Email send error:', error.message);
-        // Fallback to demo mode if email fails
-        console.log('\n' + '='.repeat(60));
-        console.log('📧 [FALLBACK - DEMO MODE] Password Reset OTP (Email Failed)');
-        console.log('='.repeat(60));
-        console.log(`Email: ${to}`);
-        console.log(`OTP Code: ${otp}`);
-        console.log('Expires in: 10 minutes');
-        console.log('='.repeat(60) + '\n');
-        return true; // Still allow reset even if email fails
+        throw new Error('Failed to send OTP email. Please verify SMTP credentials and try again.');
     }
 };
 

@@ -195,7 +195,7 @@ const updateProfile = async (req, res) => {
 // @access  Public
 const forgotPassword = async (req, res) => {
     try {
-        const { email } = req.body;
+        const email = (req.body.email || '').trim().toLowerCase();
         if (!email) {
             return res.status(400).json({ message: 'Email is required' });
         }
@@ -212,7 +212,14 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         // Send OTP via email (or demo mode if not configured)
-        await sendOtpEmail(email, otp);
+        try {
+            await sendOtpEmail(email, otp);
+        } catch (mailError) {
+            user.resetOtp = undefined;
+            user.resetOtpExpires = undefined;
+            await user.save();
+            return res.status(500).json({ message: mailError.message });
+        }
         
         res.json({ message: 'OTP sent to your email. Check backend console if in demo mode.' });
     } catch (error) {
@@ -226,7 +233,8 @@ const forgotPassword = async (req, res) => {
 // @access  Public
 const resetPassword = async (req, res) => {
     try {
-        const { email, otp, newPassword } = req.body;
+        const email = (req.body.email || '').trim().toLowerCase();
+        const { otp, newPassword } = req.body;
         if (!email || !otp || !newPassword) {
             return res.status(400).json({ message: 'Email, OTP, and new password are required' });
         }
