@@ -136,7 +136,7 @@ const getDiagnosisLogs = async (req, res) => {
             query.doctorId = req.user._id;
         }
 
-        const logs = await DiagnosisLog.find(query)
+        const logs = await DiagnosisLog.find(query).lean()
             .populate('patientId', 'name contact')
             .populate('doctorId', 'name email')
             .sort({ createdAt: -1 });

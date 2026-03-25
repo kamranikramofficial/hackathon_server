@@ -7,7 +7,7 @@ const User = require('../models/User');
 // @access  Private
 const getDoctors = async (req, res) => {
     try {
-        const doctors = await User.find({ role: 'Doctor', status: 'active' })
+        const doctors = await User.find({ role: 'Doctor', status: 'active' }).lean()
             .select('name email specialization')
             .sort({ name: 1 });
         res.json(doctors);
@@ -131,7 +131,7 @@ const getAppointments = async (req, res) => {
         }
         // Admin and Receptionist get all appointments
 
-        const appointments = await Appointment.find(query)
+        const appointments = await Appointment.find(query).lean()
             .populate('patientId', 'name contact')
             .populate('doctorId', 'name email specialization')
             .sort({ date: -1 });

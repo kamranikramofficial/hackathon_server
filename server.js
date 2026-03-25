@@ -1,12 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const compression = require('compression');
 const connectDB = require('./src/config/db');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Optimize server speed globally
+app.use(compression({ level: 6, threshold: 0 }));
 
 // CORS configuration
 const corsOptions = {

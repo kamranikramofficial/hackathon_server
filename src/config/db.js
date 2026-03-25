@@ -10,6 +10,8 @@ const connectDB = async () => {
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
             family: 4, // Prevent IPv6 timeout issues
+            maxPoolSize: 50, // Optimize database connection speeds
+            minPoolSize: 10  // Maintain active connections
         });
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {

@@ -27,7 +27,7 @@ const createPatient = async (req, res) => {
 // @access  Private
 const getPatients = async (req, res) => {
     try {
-        const patients = await Patient.find({}).sort({ createdAt: -1 });
+        const patients = await Patient.find({}).sort({ createdAt: -1 }).lean();
         res.json(patients);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -43,9 +43,9 @@ const getPatientTimeline = async (req, res) => {
         const patient = await Patient.findById(patientId);
         if (!patient) return res.status(404).json({ message: 'Patient not found' });
 
-        const appointments = await Appointment.find({ patientId }).sort({ date: -1 }).populate('doctorId', 'name');
-        const prescriptions = await Prescription.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name');
-        const diagnoses = await DiagnosisLog.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name');
+        const appointments = await Appointment.find({ patientId }).sort({ date: -1 }).populate('doctorId', 'name').lean();
+        const prescriptions = await Prescription.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name').lean();
+        const diagnoses = await DiagnosisLog.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name').lean();
 
         res.json({
             patient,
@@ -91,9 +91,9 @@ const getMyTimeline = async (req, res) => {
         }
 
         const patientId = patient._id;
-        const appointments = await Appointment.find({ patientId }).sort({ date: -1 }).populate('doctorId', 'name');
-        const prescriptions = await Prescription.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name');
-        const diagnoses = await DiagnosisLog.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name');
+        const appointments = await Appointment.find({ patientId }).sort({ date: -1 }).populate('doctorId', 'name').lean();
+        const prescriptions = await Prescription.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name').lean();
+        const diagnoses = await DiagnosisLog.find({ patientId }).sort({ createdAt: -1 }).populate('doctorId', 'name').lean();
 
         res.json({
             patient,

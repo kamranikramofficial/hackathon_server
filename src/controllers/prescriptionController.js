@@ -53,7 +53,7 @@ const getPrescriptions = async (req, res) => {
         }
         // Admin and Receptionist get all prescriptions
 
-        const prescriptions = await Prescription.find(query)
+        const prescriptions = await Prescription.find(query).lean()
             .populate('patientId', 'name')
             .populate('doctorId', 'name')
             .sort({ createdAt: -1 });

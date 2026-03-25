@@ -126,7 +126,7 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const getDoctors = async (req, res) => {
     try {
-        const doctors = await User.find({ role: 'Doctor', status: 'active' })
+        const doctors = await User.find({ role: 'Doctor', status: 'active' }).lean()
             .select('name email specialization')
             .sort({ name: 1 });
         res.json(doctors);

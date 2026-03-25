@@ -1,0 +1,1 @@
+const fs = require('fs');const glob = require('glob');glob('src/controllers/**/*.js', (err, files) => { files.forEach(file => { let code = fs.readFileSync(file, 'utf8'); code = code.replace(/(\.find\([^)]*\)(?:\.(?:select|sort|populate|limit|skip)\([^)]*\))*)(?!\.lean\(\))/g, '\.lean()'); fs.writeFileSync(file, code); console.log('Optimized '+file); }) });

@@ -26,7 +26,7 @@ const getAllUsers = async (req, res) => {
             ];
         }
         
-        const users = await User.find(query)
+        const users = await User.find(query).lean()
             .select('-passwordHash')
             .sort({ createdAt: -1 });
             
@@ -157,7 +157,7 @@ const deleteUser = async (req, res) => {
 // Get all doctors with their activity stats
 const getDoctorActivities = async (req, res) => {
     try {
-        const doctors = await User.find({ role: 'Doctor', status: { $ne: 'deleted' } })
+        const doctors = await User.find({ role: 'Doctor', status: { $ne: 'deleted' } }).lean()
             .select('-passwordHash');
         
         const doctorActivities = await Promise.all(doctors.map(async (doctor) => {
@@ -185,7 +185,7 @@ const getDoctorActivities = async (req, res) => {
             });
             
             // Get recent activity
-            const recentAppointments = await Appointment.find({ doctorId: doctor._id })
+            const recentAppointments = await Appointment.find({ doctorId: doctor._id }).lean()
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .populate('patientId', 'name');
@@ -316,21 +316,21 @@ const getActivityLogs = async (req, res) => {
         const { limit = 50, type } = req.query;
         
         // Get recent appointments
-        const recentAppointments = await Appointment.find()
+        const recentAppointments = await Appointment.find().lean()
             .sort({ createdAt: -1 })
             .limit(parseInt(limit))
             .populate('patientId', 'name')
             .populate('doctorId', 'name');
         
         // Get recent prescriptions
-        const recentPrescriptions = await Prescription.find()
+        const recentPrescriptions = await Prescription.find().lean()
             .sort({ createdAt: -1 })
             .limit(parseInt(limit))
             .populate('patientId', 'name')
             .populate('doctorId', 'name');
         
         // Get recent diagnoses
-        const recentDiagnoses = await DiagnosisLog.find()
+        const recentDiagnoses = await DiagnosisLog.find().lean()
             .sort({ createdAt: -1 })
             .limit(parseInt(limit))
             .populate('patientId', 'name')
