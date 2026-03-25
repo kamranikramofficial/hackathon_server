@@ -14,7 +14,7 @@ const corsOptions = {
         'http://localhost:5173',
         'http://localhost:5174',
         'http://localhost:5175',
-        'https://hackathon2026-tr98.vercel.app'
+        'https://ai-clinic-pro.vercel.app/'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
