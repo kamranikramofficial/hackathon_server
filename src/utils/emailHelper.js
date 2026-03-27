@@ -5,7 +5,7 @@ let transporter = null;
 const getMailConfig = () => {
     const emailUser = (process.env.EMAIL_USER || '').trim();
     // Gmail app passwords are often copied with spaces; normalize to raw token.
-    const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+        const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
     return { emailUser, emailPass };
 };
 
