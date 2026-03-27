@@ -65,7 +65,8 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        // Only select fields we need - much faster than fetching all fields
+        const user = await User.findOne({ email }).select('email passwordHash name role status _id');
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
@@ -126,8 +127,10 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const getDoctors = async (req, res) => {
     try {
-        const doctors = await User.find({ role: 'Doctor', status: 'active' }).lean()
-            .select('name email specialization')
+        // Only select needed fields and use lean() which returns plain JS objects (faster)
+        const doctors = await User.find({ role: 'Doctor', status: 'active' })
+            .lean()
+            .select('name email specialization _id')
             .sort({ name: 1 });
         res.json(doctors);
     } catch (error) {
