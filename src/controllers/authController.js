@@ -214,17 +214,19 @@ const forgotPassword = async (req, res) => {
         // Send OTP via email (or demo mode if not configured)
         try {
             await sendOtpEmail(email, otp);
+            res.json({ message: 'OTP sent to your email' }); // Move success response here
         } catch (mailError) {
+            console.error('Forgot Password - Email send failed:', mailError); // Log the specific mail error
             user.resetOtp = undefined;
             user.resetOtpExpires = undefined;
             await user.save();
-            return res.status(500).json({ message: mailError.message });
+            // Return a generic error to the user
+            return res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
         }
         
-        res.json({ message: 'OTP sent to your email. Check backend console if in demo mode.' });
     } catch (error) {
-        console.error('Forgot password error:', error);
-        res.status(500).json({ message: 'Failed to process forgot password. Please try again.' });
+        console.error('Forgot Password - General error:', error); // Log general errors
+        res.status(500).json({ message: 'An unexpected error occurred. Please try again.' });
     }
 };
 
