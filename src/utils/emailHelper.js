@@ -12,6 +12,7 @@ const getMailConfig = () => {
 const getTransporter = () => {
     if (!transporter) {
         const { emailUser, emailPass } = getMailConfig();
+        console.log('Attempting to create transporter with user:', emailUser); // Added for debugging
         if (!emailUser || !emailPass) {
             console.error('EMAIL_USER or EMAIL_PASS not set in environment variables');
             return null;
@@ -73,11 +74,13 @@ const sendOtpEmail = async (to, otp) => {
     try {
         const info = await transport.sendMail(mailOptions);
         if (!info.accepted || !info.accepted.length) {
+            console.error('SMTP did not accept recipient address:', to); // Added for debugging
             throw new Error('SMTP did not accept recipient address');
         }
+        console.log('OTP Email sent successfully to:', to); // Added for debugging
         return true;
     } catch (error) {
-        console.error('Email send error:', error.message);
+        console.error('Full email send error:', error); // Modified for detailed error
         throw new Error('Failed to send OTP email. Please verify SMTP credentials and try again.');
     }
 };
