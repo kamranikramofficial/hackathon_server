@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendOtpEmail = async (to, otp) => {
     const apiKey = process.env.RESEND_API_KEY;
-    const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+    const emailFrom = process.env.EMAIL_FROM || 'ai-clinic-pro@resend.dev';
 
     if (!apiKey) {
         console.error('RESEND_API_KEY is not set in environment variables.');
